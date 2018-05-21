@@ -1,0 +1,22 @@
+{
+  "name": "eureka/component-server",
+  "description": "Eureka component server",
+  "type": "library",
+  "license": "MIT",
+
+  "authors": [
+    {
+      "name": "Romain Cottard",
+      "role": "Developer"
+    }
+  ],
+
+  "autoload": {
+    "psr-4": {
+      "Eureka\\Component\\Server\\": "src/"
+    }
+  },
+  "require": {
+    "psr/log": "^1.0.2"
+  }
+}
