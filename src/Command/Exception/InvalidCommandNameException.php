@@ -7,13 +7,13 @@
  * file that was distributed with this source code.
  */
 
-namespace Eureka\Component\Server\Process\Exception;
+namespace Eureka\Component\Server\Command\Exception;
 
 /**
- * Exception ProcessAlreadyRunningException
+ * Exception class for Command
  *
  * @author Romain Cottard
  */
-class ProcessAlreadyRunningException extends \RuntimeException
+class InvalidCommandNameException extends \LogicException
 {
 }

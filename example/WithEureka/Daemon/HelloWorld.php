@@ -9,10 +9,10 @@
 
 namespace Application\Script\Daemon;
 
-use Eureka\Eurekon;
-use Eureka\Component\Server\Server;
 use Eureka\Component\Server\Command;
-use Eureka\Component\Server\Process;
+use Eureka\Component\Server\Multiprocessing;
+use Eureka\Component\Server\Process\Finder\PGrepProcessFinder;
+use Eureka\Eurekon;
 
 /**
  * Daemon script example
@@ -21,7 +21,7 @@ use Eureka\Component\Server\Process;
  */
 class HelloWorld extends Eurekon\AbstractScript
 {
-    /** @var Process\Multiprocessing $multiprocessing Multiprocessing instance */
+    /** @var Multiprocessing\Multiprocessing $multiprocessing Multiprocessing instance */
     protected $multiprocessing = null;
 
     /** @var Command\Argument[] $arguments List of arguments. */
@@ -40,21 +40,19 @@ class HelloWorld extends Eurekon\AbstractScript
     }
 
     /**
-     * {@inheritdoc}
+     * @return void
      */
-    public function help()
+    public function help(): void
     {
         $help = new Eurekon\Help(basename(self::class));
         $help->display();
-
-        return;
     }
 
     /**
-     * {@inheritdoc}
+     * @return void
      * @throws \Exception
      */
-    public function run()
+    public function run(): void
     {
         $this->initMultiprocessing();
 
@@ -66,38 +64,34 @@ class HelloWorld extends Eurekon\AbstractScript
      *
      * @return void
      */
-    protected function initMultiprocessing()
+    protected function initMultiprocessing(): void
     {
         $poolConfigs = [
-            'fast' => new Process\PoolConfig(0.6),
-            'slow' => new Process\PoolConfig(0.4),
+            'fast' => new Multiprocessing\PoolConfig(0.6),
+            'slow' => new Multiprocessing\PoolConfig(0.4),
         ];
 
         //~ Prepend worker name argument
         $this->addArgument(new Command\Argument('name', 'Application/Script/Worker/HelloWorld', true));
 
-        //~ Create server
-        $server = new Server(new Command\PGrepCommand());
-
-        $this->multiprocessing = new Process\Multiprocessing();
+        $this->multiprocessing = new Multiprocessing\Multiprocessing();
         $this->multiprocessing->setSafeMultiprocessing(true);
         $this->multiprocessing->setCallback([$this, 'buildArgumentsForWorker']);
 
         foreach ($poolConfigs as $poolIndex => $poolConfig) {
-            $this->multiprocessing->addPool($this->createPool($server, 10, $poolIndex, $poolConfig));
+            $this->multiprocessing->addPool($this->createPool(10, $poolIndex, $poolConfig));
         }
     }
 
     /**
      * Configure Multi processing pools
      *
-     * @param  Server $server
      * @param  int $maxProcess
      * @param  string|int $poolIndex
-     * @param  \Eureka\Component\Server\Process\PoolConfig $poolConfig
-     * @return \Eureka\Component\Server\Process\Pool
+     * @param  Multiprocessing\PoolConfig $poolConfig
+     * @return Multiprocessing\Pool
      */
-    protected function createPool(Server $server, $maxProcess, $poolIndex, Process\PoolConfig $poolConfig)
+    protected function createPool($maxProcess, $poolIndex, Multiprocessing\PoolConfig $poolConfig)
     {
         //~ Global command
         $command = new Command\ConsoleCommand(__DIR__ . '/../../');
@@ -105,17 +99,19 @@ class HelloWorld extends Eurekon\AbstractScript
 
         $command->exec();
         //~ Create pool & set callback context for this pool.
-        $pool = new Process\Pool($poolIndex, $poolConfig->getRatio(), $poolConfig->isShared());
+        $pool = new Multiprocessing\Pool($poolIndex, $poolConfig->getRatio(), $poolConfig->isShared());
 
         //~ Attach context for the pool
-        $pool->setCallbackContext(new Process\Callback\Context(['pool-index' => $poolIndex]));
+        $pool->setCallbackContext(new Multiprocessing\Callback\Context(['pool-index' => $poolIndex]));
 
         //~ Create process & attach them to the pool
         for ($index = 0, $max = ceil($maxProcess * $poolConfig->getRatio()); $index < $max; $index++) {
             $commandProcess = clone $command;
             $commandProcess->setType(new Command\Argument('pool-index', $poolIndex . '.' . $index));
 
-            $pool->attachProcess(new Process\Process($server, $commandProcess));
+            $pool->attachWorker(
+                new Multiprocessing\Worker($commandProcess, new PGrepProcessFinder(new Command\PGrepCommand()))
+            );
         }
 
         return $pool;
@@ -124,10 +120,10 @@ class HelloWorld extends Eurekon\AbstractScript
     /**
      * Callback method use by multiprocessing handle to build get arguments for workers
      *
-     * @param \Eureka\Component\Server\Process\Callback\Context $context
+     * @param Multiprocessing\Callback\Context $context
      * @return array
      */
-    public function buildArgumentsForWorker(Process\Callback\Context $context)
+    public function buildArgumentsForWorker(Multiprocessing\Callback\Context $context)
     {
         $parameters = [];
 

@@ -23,14 +23,5 @@ interface ConsoleCommandInterface extends CommandInterface
      * @param  Argument $argument
      * @return $this
      */
-    public function setType(Argument $argument);
-
-    /**
-     * Get script pattern
-     *
-     * @param  bool $withArguments
-     * @param  bool $withType
-     * @return string
-     */
-    public function getPattern($withArguments = true, $withType = false);
+    public function setType(Argument $argument): self;
 }

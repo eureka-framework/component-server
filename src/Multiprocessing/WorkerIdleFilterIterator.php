@@ -7,32 +7,22 @@
  * file that was distributed with this source code.
  */
 
-namespace Eureka\Component\Server\Process;
+namespace Eureka\Component\Server\Multiprocessing;
 
 /**
  * Process class. It is container for a Command instance.
  *
  * @author Romain Cottard
  */
-class ProcessIdleFilterIterator extends \FilterIterator
+class WorkerIdleFilterIterator extends \FilterIterator
 {
     /**
      * Return true if the current process is idle.
      *
      * @return bool
      */
-    public function accept()
+    public function accept(): bool
     {
         return $this->current()->isIdle();
-    }
-
-    /**
-     * Current method.
-     *
-     * @return Process
-     */
-    public function current()
-    {
-        return parent::current();
     }
 }

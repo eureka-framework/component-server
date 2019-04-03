@@ -9,22 +9,34 @@
 
 namespace Eureka\Component\Server\Command;
 
+use Eureka\Component\Server\Command\Exception\InvalidCommandNameException;
+
 /**
  * Main Console command class.
  * Use to execute script with Eureka bin/console executable script.
  *
  * @author Romain Cottard
  */
-class ConsoleCommand extends AbstractCommand implements ConsoleCommandInterface
+final class ConsoleCommand extends AbstractCommand implements ConsoleCommandInterface
 {
+    /** @var string COMMAND_NAME_CONSOLE */
+    public const COMMAND_NAME = 'console';
+
+    /** @var string COMMAND_NAME_ALIAS */
+    public const COMMAND_NAME_ALIAS = 'script';
+
     /**
      * ConsoleCommand constructor.
      *
-     * @param string $rootApp
+     * @param string $name
      */
-    public function __construct($rootApp)
+    public function __construct(string $name)
     {
-        $this->name  = realpath($rootApp . '/bin') . '/console';
+        if (!in_array(basename($name), [self::COMMAND_NAME, self::COMMAND_NAME_ALIAS])) {
+            throw new InvalidCommandNameException('Command name is invalid (must be "[/.../]script" or "[/.../]console"');
+        }
+
+        $this->name  = $name;
     }
 
     /**
@@ -34,7 +46,7 @@ class ConsoleCommand extends AbstractCommand implements ConsoleCommandInterface
      * @param  bool $withType
      * @return string
      */
-    public function getPattern($withArguments = true, $withType = true)
+    public function getPattern(bool $withArguments = true, bool $withType = true): string
     {
         static $replaces = array(
             '-'  => '[-]',
@@ -58,7 +70,7 @@ class ConsoleCommand extends AbstractCommand implements ConsoleCommandInterface
      * @param  Argument $argument
      * @return $this
      */
-    public function setType(Argument $argument)
+    public function setType(Argument $argument): ConsoleCommandInterface
     {
         $this->argumentType = $argument;
 
@@ -71,7 +83,7 @@ class ConsoleCommand extends AbstractCommand implements ConsoleCommandInterface
      * @param  boolean $isAsync
      * @return string
      */
-    protected function build($isAsync)
+    protected function build(bool $isAsync): string
     {
         $command = '';
 
@@ -99,7 +111,7 @@ class ConsoleCommand extends AbstractCommand implements ConsoleCommandInterface
      * @param  bool $withArguments
      * @return string
      */
-    protected function buildArguments($withArguments = true)
+    protected function buildArguments(bool $withArguments = true): string
     {
         $arguments = [];
 
@@ -119,7 +131,7 @@ class ConsoleCommand extends AbstractCommand implements ConsoleCommandInterface
      *
      * @return string
      */
-    protected function buildArgumentType()
+    protected function buildArgumentType(): string
     {
         return ' ' . (string) $this->argumentType;
     }

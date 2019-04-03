@@ -7,7 +7,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Eureka\Component\Server\Process;
+namespace Eureka\Component\Server\Multiprocessing;
 
 use Psr\Log\LoggerAwareTrait;
 
@@ -17,7 +17,7 @@ use Psr\Log\LoggerAwareTrait;
  * @author Romain Cottard
  * @todo   Improve this class to catch list of given exception to retry & a way to retry
  */
-class Retry
+final class Retry
 {
     /** Use logger trait to set logger. */
     use LoggerAwareTrait;

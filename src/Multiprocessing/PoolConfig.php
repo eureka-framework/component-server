@@ -7,7 +7,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Eureka\Component\Server\Process;
+namespace Eureka\Component\Server\Multiprocessing;
 
 /**
  * Pool Config class.
@@ -30,10 +30,10 @@ class PoolConfig
      *
      * @param  float $ratio
      * @param  bool $isShared
-     * @param  string|int $index
+     * @param  string|null $index
      * @throws \OutOfRangeException
      */
-    public function __construct($ratio, $isShared = false, $index = null)
+    public function __construct(float $ratio, bool $isShared = false, ?string $index = null)
     {
         $this
             ->setRatio($ratio)
@@ -45,9 +45,9 @@ class PoolConfig
     /**
      * Get index
      *
-     * @return string|int
+     * @return string|null
      */
-    public function getIndex()
+    public function getIndex(): ?string
     {
         return $this->index;
     }
@@ -57,7 +57,7 @@ class PoolConfig
      *
      * @return float
      */
-    public function getRatio()
+    public function getRatio(): float
     {
         return $this->ratio;
     }
@@ -67,7 +67,7 @@ class PoolConfig
      *
      * @return bool
      */
-    public function isShared()
+    public function isShared(): bool
     {
         return $this->isShared;
     }
@@ -79,9 +79,9 @@ class PoolConfig
      * @return $this
      * @throws \OutOfRangeException
      */
-    private function setRatio($ratio)
+    private function setRatio(float $ratio): self
     {
-        $this->ratio = (float) $ratio;
+        $this->ratio = $ratio;
 
         if ($this->ratio < 0.01 || $this->ratio > 1.0) {
             throw new \OutOfRangeException('Ratio must be a number between 0.01s and 1.0 (included)!');
@@ -96,9 +96,9 @@ class PoolConfig
      * @param  bool $isShared
      * @return $this
      */
-    private function setIsShared($isShared)
+    private function setIsShared(bool $isShared): self
     {
-        $this->isShared = (bool) $isShared;
+        $this->isShared = $isShared;
 
         return $this;
     }
@@ -106,10 +106,10 @@ class PoolConfig
     /**
      * Set the pool "index" (value or name)
      *
-     * @param  string|int $index
+     * @param  string $index
      * @return $this
      */
-    private function setIndex($index)
+    private function setIndex(string $index): self
     {
         $this->index = $index;
 

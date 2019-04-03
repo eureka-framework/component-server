@@ -9,8 +9,7 @@
 
 namespace Eureka\Component\Server\Process;
 
-use Eureka\Component\Server\Command\ConsoleCommandInterface;
-use Eureka\Component\Server\Server;
+use Eureka\Component\Server\Command;
 
 /**
  * Process class. It is container for a Command instance.
@@ -19,58 +18,58 @@ use Eureka\Component\Server\Server;
  */
 class Process
 {
-    /** @var Server $server Server instance */
-    protected $server = null;
-
-    /** @var ConsoleCommandInterface $commandBase Command instance. */
-    protected $commandBase = null;
-
-    /** @var ConsoleCommandInterface $command ConsoleCommand instance. */
+    /** @var Command\CommandInterface $command ConsoleCommand instance. */
     protected $command = null;
+
+    /** @var int|null $pid */
+    protected $pid = null;
 
     /**
      * Process constructor.
      *
-     * @param Server $server Server
-     * @param ConsoleCommandInterface $command Base command to execute
+     * @param Command\CommandInterface $command
+     * @param int|null $pid
      */
-    public function __construct(Server $server, ConsoleCommandInterface $command)
+    public function __construct(Command\CommandInterface $command, ?int $pid = null)
     {
-        $this->server      = $server;
-        $this->commandBase = $command;
-        $this->command     = clone $command;
+        $this->command = clone $command;
+        $this->pid     = $pid;
     }
 
     /**
      * Get command linked to the process.
      *
-     * @return ConsoleCommandInterface
+     * @return Command\CommandInterface
      */
-    public function getCommand()
+    public function getCommand(): Command\CommandInterface
     {
         return $this->command;
     }
 
     /**
-     * Get pattern from command
-     *
-     * @param  bool $withArguments
-     * @param  bool $withType
-     * @return string
+     * @return int|null
      */
-    public function getPattern($withArguments, $withType = true)
+    public function getPid(): ?int
     {
-        return $this->command->getPattern($withArguments, $withType);
+        return $this->pid;
     }
 
     /**
+     * @return bool
+     */
+    public function isRunning(): bool
+    {
+        return ($this->pid !== null);
+    }
+
+    /*
      * Check if the process is idle or not.
      *
      * @return bool
-     */
+     *
     public function isIdle()
     {
-        if (!($this->command instanceof ConsoleCommandInterface)) {
+        if (!($this->command instanceof Command\ConsoleCommandInterface)) {
             return true;
         }
 
@@ -81,7 +80,7 @@ class Process
      * Check if the process is already running or not.
      *
      * @return bool
-     */
+     *
     public function isAlreadyRunning()
     {
         if (!($this->command instanceof ConsoleCommandInterface)) {
@@ -92,25 +91,13 @@ class Process
     }
 
     /**
-     * Reset command attach to this process.
-     *
-     * @return ConsoleCommandInterface
-     */
-    public function reset()
-    {
-        $this->command = clone $this->commandBase;
-
-        return $this->getCommand();
-    }
-
-    /**
      * Execute command in this process.
      *
      * @param  boolean $isAsync If process must be asynchronous
      * @param  bool $safeMultiprocessing If must check if already running
      * @throws Exception\ProcessAlreadyRunningException
      * @return $this
-     */
+     *
     public function run($isAsync = false, $safeMultiprocessing = true)
     {
         //~ Check the current command is not already running before execution.
@@ -121,5 +108,5 @@ class Process
         $this->command->exec($isAsync);
 
         return $this;
-    }
+    }*/
 }

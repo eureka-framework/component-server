@@ -14,12 +14,12 @@ namespace Eureka\Component\Server\Command;
  *
  * @author Romain Cottard
  */
-class Argument
+final class Argument
 {
     /** @var string $name Argument name */
     protected $name = '';
 
-    /** @var string|int|null $value Argument value if have value */
+    /** @var mixed $value Argument value if have value */
     protected $value = null;
 
     /** @var bool $isFullName If is long name name (--provider-id instead of -i) */
@@ -29,10 +29,10 @@ class Argument
      * Argument constructor.
      *
      * @param string $name
-     * @param int|string|null $value
+     * @param mixed $value
      * @param bool $isFullName
      */
-    public function __construct($name, $value = null, $isFullName = true)
+    public function __construct(string $name, $value = null, bool $isFullName = true)
     {
         $this->name       = $name;
         $this->value      = $value;
@@ -44,7 +44,7 @@ class Argument
      *
      * @return string
      */
-    public function getAsString()
+    public function getAsString(): string
     {
         $argument = '';
 
@@ -66,7 +66,7 @@ class Argument
      *
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -86,7 +86,7 @@ class Argument
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->getAsString();
     }

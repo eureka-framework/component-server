@@ -17,8 +17,16 @@ namespace Eureka\Component\Server\Command;
  *
  * @author Romain Cottard
  */
-class PGrepCommand extends AbstractCommand
+final class PGrepCommand extends AbstractCommand
 {
-    /** @var string $name Command name */
-    protected $name = 'pgrep';
+    /** @var string COMMAND_NAME */
+    public const COMMAND_NAME = 'pgrep';
+
+    /**
+     * PGrepCommand constructor.
+     */
+    public function __construct()
+    {
+        $this->name = self::COMMAND_NAME;
+    }
 }

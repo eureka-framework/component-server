@@ -28,21 +28,18 @@ class HelloWorld extends Eurekon\AbstractScript
     }
 
     /**
-     * {@inheritdoc}
+     * @return void
      */
-    public function help()
+    public function help(): void
     {
         $help = new Eurekon\Help(basename(self::class));
         $help->display();
-
-        return;
     }
 
     /**
-     * {@inheritdoc}
-     * @throws \Exception
+     * @return void
      */
-    public function run()
+    public function run(): void
     {
         sleep(10);
         Eurekon\IO\Out::std('Hello World (with ID: ' . Eurekon\Argument\Argument::getInstance()->get('test-id') . ')');

@@ -7,17 +7,17 @@
  * file that was distributed with this source code.
  */
 
-namespace Eureka\Component\Server\Process;
+namespace Eureka\Component\Server\Multiprocessing;
 
 /**
- * Process Pool class.
+ * Worker Pool class.
  *
  * @author Romain Cottard
  */
-class Pool implements \Iterator, \Countable
+final class Pool implements \Iterator, \Countable
 {
-    /** @var Process[] $pool List of process in instance Pool */
-    protected $pool = [];
+    /** @var Worker[] $workers List of worker in instance Pool */
+    protected $workers = [];
 
     /** @var string $name Pool name */
     protected $name = '';
@@ -37,8 +37,8 @@ class Pool implements \Iterator, \Countable
     /** @var Callback\Context $context Context data for process callback method. */
     protected $callbackContext = [];
 
-    /** @var Process[] $processIdle List of process idle. */
-    protected $processIdle = [];
+    /** @var Worker[] $workersIdle List of process idle. */
+    protected $workersIdle = [];
 
     /**
      * Pool constructor.
@@ -48,7 +48,7 @@ class Pool implements \Iterator, \Countable
      * @param  bool $isShared
      * @throws \OutOfRangeException
      */
-    public function __construct($name, $ratio, $isShared)
+    public function __construct(string $name, float $ratio, bool $isShared)
     {
 
         $this
@@ -61,12 +61,12 @@ class Pool implements \Iterator, \Countable
     /**
      * Attach process to the pool
      *
-     * @param  Process $process
+     * @param  Worker $worker
      * @return $this
      */
-    public function attachProcess(Process $process)
+    public function attachWorker(Worker $worker): self
     {
-        $this->pool[] = $process;
+        $this->workers[] = $worker;
         $this->count++;
 
         return $this;
@@ -77,7 +77,7 @@ class Pool implements \Iterator, \Countable
      *
      * @return Callback\Context
      */
-    public function getCallbackContext()
+    public function getCallbackContext(): Callback\Context
     {
         return $this->callbackContext;
     }
@@ -88,7 +88,7 @@ class Pool implements \Iterator, \Countable
      * @param  Callback\Context $callbackContext
      * @return $this
      */
-    public function setCallbackContext(Callback\Context $callbackContext)
+    public function setCallbackContext(Callback\Context $callbackContext): self
     {
         $this->callbackContext = $callbackContext;
 
@@ -100,7 +100,7 @@ class Pool implements \Iterator, \Countable
      *
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -110,80 +110,80 @@ class Pool implements \Iterator, \Countable
      *
      * @return bool
      */
-    public function isShared()
+    public function isShared(): bool
     {
         return $this->isShared;
     }
 
     /**
-     * Check if pool have process idle
+     * Check if pool have worker idle
      *
      * @return bool
      */
-    public function hasIdleProcess()
+    public function hasIdleWorker(): bool
     {
-        $this->processIdle = [];
-        foreach ($this->pool as $process) {
-            if (!($process instanceof Process)) {
+        $this->workersIdle = [];
+        foreach ($this->workers as $worker) {
+            if (!($worker instanceof Worker)) {
                 continue;
             }
 
-            if (!$process->isIdle()) {
+            if (!$worker->isIdle()) {
                 continue;
             }
 
-            $this->processIdle[] = $process;
+            $this->workersIdle[] = $worker;
         }
 
-        return (bool) count($this->processIdle);
+        return (bool) count($this->workersIdle);
     }
 
     /**
-     * {@inheritdoc}
+     * @return Worker
      */
-    public function current()
+    public function current(): Worker
     {
-        return $this->pool[$this->index];
+        return $this->workers[$this->index];
     }
 
     /**
-     * {@inheritdoc}
+     * @return int
      */
-    public function key()
+    public function key(): int
     {
         return $this->index;
     }
 
     /**
-     * {@inheritdoc}
+     * @return void
      */
-    public function rewind()
+    public function rewind(): void
     {
         $this->index = 0;
     }
 
     /**
-     * {@inheritdoc}
+     * @return void
      */
-    public function next()
+    public function next(): void
     {
         $this->index++;
     }
 
     /**
-     * {@inheritdoc}
+     * @return bool
      */
-    public function valid()
+    public function valid(): bool
     {
         return ($this->index < $this->count);
     }
 
     /**
-     * {@inheritdoc}
+     * @return int
      */
-    public function count()
+    public function count(): int
     {
-        return count($this->pool);
+        return count($this->workers);
     }
 
     /**
@@ -192,9 +192,9 @@ class Pool implements \Iterator, \Countable
      * @param  string $name
      * @return $this
      */
-    private function setName($name)
+    private function setName(string $name): self
     {
-        $this->name = (string) $name;
+        $this->name = $name;
 
         return $this;
     }
@@ -206,9 +206,9 @@ class Pool implements \Iterator, \Countable
      * @return $this
      * @throws \OutOfRangeException
      */
-    private function setRatio($ratio)
+    private function setRatio(float $ratio): self
     {
-        $this->ratio = (float) $ratio;
+        $this->ratio = $ratio;
 
         if ($this->ratio < 0.01 || $this->ratio > 1.0) {
             throw new \OutOfRangeException('Ratio must be a number between 0.1 and 0.9 (included)!');
@@ -218,14 +218,14 @@ class Pool implements \Iterator, \Countable
     }
 
     /**
-     * Set if the pool is shared for different type of process
+     * Set if the pool is shared for different type of worker
      *
      * @param  bool $isShared
      * @return $this
      */
-    private function setIsShared($isShared)
+    private function setIsShared(bool $isShared): self
     {
-        $this->isShared = (bool) $isShared;
+        $this->isShared = $isShared;
 
         return $this;
     }

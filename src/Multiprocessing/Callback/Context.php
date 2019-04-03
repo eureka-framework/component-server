@@ -7,14 +7,14 @@
  * file that was distributed with this source code.
  */
 
-namespace Eureka\Component\Server\Process\Callback;
+namespace Eureka\Component\Server\Multiprocessing\Callback;
 
 /**
  * Process Pool class.
  *
  * @author Romain Cottard
  */
-class Context
+final class Context
 {
     /** @var mixed $data Context data for process callback method. */
     protected $data = null;
@@ -30,9 +30,9 @@ class Context
     }
 
     /**
-     * Get offset value.
+     * Get data.
      *
-     * @return int
+     * @return mixed
      */
     public function getData()
     {
@@ -45,7 +45,7 @@ class Context
      * @param  mixed $data
      * @return $this
      */
-    public function setData($data)
+    public function setData($data): self
     {
         $this->data = $data;
 

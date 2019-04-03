@@ -7,14 +7,14 @@
  * file that was distributed with this source code.
  */
 
-namespace Eureka\Component\Server\Process\Callback;
+namespace Eureka\Component\Server\Multiprocessing\Callback;
 
 /**
  * Callback context range. Used to manage offset / limit subset result set for scripts.
  *
  * @author Romain Cottard
  */
-class ContextRange implements \Iterator, \Countable
+final class ContextRange implements \Iterator, \Countable
 {
     /** @var int $index Index of current step range. */
     protected $index = 0;
@@ -45,7 +45,7 @@ class ContextRange implements \Iterator, \Countable
      * @param int $step
      * @param int $nbRepeat
      */
-    public function __construct($offset = 0, $limit = 100, $step = 300, $nbRepeat = 5)
+    public function __construct(int $offset = 0, int $limit = 100, int $step = 300, int $nbRepeat = 5)
     {
         $this->setOffset($offset);
         $this->setLimit($limit);
@@ -58,7 +58,7 @@ class ContextRange implements \Iterator, \Countable
      *
      * @return int
      */
-    public function getNbRepeat()
+    public function getNbRepeat(): int
     {
         return $this->nbRepeat;
     }
@@ -70,10 +70,8 @@ class ContextRange implements \Iterator, \Countable
      * @return $this
      * @throws \UnderflowException
      */
-    public function setNbRepeat($nbRepeat)
+    public function setNbRepeat(int $nbRepeat): self
     {
-        $nbRepeat = (int) $nbRepeat;
-
         if ($nbRepeat < 0) {
             throw new \UnderflowException('Nb Repeat must be greater than 0!');
         }
@@ -88,7 +86,7 @@ class ContextRange implements \Iterator, \Countable
      *
      * @return int
      */
-    public function getOffset()
+    public function getOffset(): int
     {
         return $this->offset;
     }
@@ -100,10 +98,8 @@ class ContextRange implements \Iterator, \Countable
      * @return $this
      * @throws \UnderflowException
      */
-    public function setOffset($offset)
+    public function setOffset(int $offset): self
     {
-        $offset = (int) $offset;
-
         if ($offset < 0) {
             throw new \UnderflowException('Offset must be equals or greater than 0!');
         }
@@ -118,7 +114,7 @@ class ContextRange implements \Iterator, \Countable
      *
      * @return int
      */
-    public function getLimit()
+    public function getLimit(): int
     {
         return $this->limit;
     }
@@ -130,10 +126,8 @@ class ContextRange implements \Iterator, \Countable
      * @return $this
      * @throws \UnderflowException
      */
-    public function setLimit($limit)
+    public function setLimit(int $limit): self
     {
-        $limit = (int) $limit;
-
         if ($limit < 0) {
             throw new \UnderflowException('Limit must be equals or greater than 0!');
         }
@@ -148,7 +142,7 @@ class ContextRange implements \Iterator, \Countable
      *
      * @return int
      */
-    public function getStep()
+    public function getStep(): int
     {
         return $this->step;
     }
@@ -160,10 +154,8 @@ class ContextRange implements \Iterator, \Countable
      * @return $this
      * @throws \UnderflowException
      */
-    public function setStep($step)
+    public function setStep(int $step): self
     {
-        $step = (int) $step;
-
         if ($step <= 0) {
             throw new \UnderflowException('Step must be greater than 0!');
         }
@@ -178,7 +170,7 @@ class ContextRange implements \Iterator, \Countable
      *
      * @return int
      */
-    public function getOffsetMax()
+    public function getOffsetMax(): int
     {
         return $this->offsetMax;
     }
@@ -190,7 +182,7 @@ class ContextRange implements \Iterator, \Countable
      * @return $this
      * @throws \UnderflowException
      */
-    public function setOffsetMax($offsetMax)
+    public function setOffsetMax(int $offsetMax): self
     {
         if ($offsetMax < 0) {
             throw new \UnderflowException('Offset max must be greater than 0!');
@@ -212,7 +204,7 @@ class ContextRange implements \Iterator, \Countable
      *
      * @return int
      */
-    public function getOffsetCurrent()
+    public function getOffsetCurrent(): int
     {
         return $this->getOffset() + ($this->key() * $this->getStep());
     }
@@ -222,7 +214,7 @@ class ContextRange implements \Iterator, \Countable
      *
      * @return int
      */
-    protected function getNbRepeatMax()
+    protected function getNbRepeatMax(): int
     {
         return $this->nbRepeatMax;
     }
@@ -234,13 +226,13 @@ class ContextRange implements \Iterator, \Countable
      * @return $this
      * @throws \OutOfRangeException
      */
-    protected function setNbRepeatMax($nbRepeatMax)
+    protected function setNbRepeatMax(int $nbRepeatMax): self
     {
         if ($nbRepeatMax < 0) {
             throw new \OutOfRangeException('Offset max must be greater than 0!');
         }
 
-        $this->nbRepeatMax = (int) $nbRepeatMax;
+        $this->nbRepeatMax = $nbRepeatMax;
 
         return $this;
     }
@@ -250,39 +242,39 @@ class ContextRange implements \Iterator, \Countable
      *
      * @return int
      */
-    protected function calculateOffsetMax()
+    protected function calculateOffsetMax(): int
     {
         return $this->getOffset() + ($this->getLimit() + $this->getStep() * ($this->getNbRepeat() - 1));
     }
 
     /**
-     * {@inheritdoc}
+     * @return int
      */
-    public function count()
+    public function count(): int
     {
         return $this->nbRepeat;
     }
 
     /**
-     * {@inheritdoc}
+     * @return ContextRange
      */
-    public function current()
+    public function current(): self
     {
         return $this;
     }
 
     /**
-     * {@inheritdoc}
+     * @return int
      */
-    public function key()
+    public function key(): int
     {
         return $this->index;
     }
 
     /**
-     * {@inheritdoc}
+     * @return void
      */
-    public function next()
+    public function next(): void
     {
         $this->index++;
     }
@@ -290,15 +282,15 @@ class ContextRange implements \Iterator, \Countable
     /**
      * {@inheritdoc}
      */
-    public function rewind()
+    public function rewind(): void
     {
         $this->index = 0;
     }
 
     /**
-     * {@inheritdoc}
+     * @return bool
      */
-    public function valid()
+    public function valid(): bool
     {
         return $this->index < $this->getNbRepeatMax();
     }

@@ -14,10 +14,10 @@ namespace Eureka\Component\Server\Command;
  *
  * @author Romain Cottard
  */
-class PHPCommand extends AbstractCommand implements ConsoleCommandInterface
+final class PHPCommand extends AbstractCommand implements ConsoleCommandInterface
 {
-    /** @var string $name Command name */
-    protected $name = 'php';
+    /** @var string COMMAND_NAME */
+    public const COMMAND_NAME = 'php';
 
     /**
      * PHPCommand constructor.
@@ -29,6 +29,8 @@ class PHPCommand extends AbstractCommand implements ConsoleCommandInterface
         if (!file_exists($scriptFile)) {
             throw new \LogicException('Invalid file script');
         }
+
+        $this->name = self::COMMAND_NAME;
 
         $this->addArgument(new Argument('', $scriptFile, false));
     }

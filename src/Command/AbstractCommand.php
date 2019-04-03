@@ -40,7 +40,7 @@ abstract class AbstractCommand implements CommandInterface
      * @param  Argument $argument
      * @return $this
      */
-    public function addArgument(Argument $argument)
+    public function addArgument(Argument $argument): CommandInterface
     {
         $this->arguments[] = $argument;
 
@@ -53,28 +53,11 @@ abstract class AbstractCommand implements CommandInterface
      * @param  Argument[] $arguments
      * @return $this
      */
-    public function addArguments(array $arguments)
+    public function addArguments(array $arguments): CommandInterface
     {
         foreach ($arguments as $argument) {
             $this->addArgument($argument);
         }
-
-        return $this;
-    }
-
-    /**
-     * Set output log for the command
-     *
-     * @param  string $logStandard
-     * @param  string $logError
-     * @param  bool $isLogAppend
-     * @return $this
-     */
-    public function setLog($logStandard, $logError = null, $isLogAppend = false)
-    {
-        $this->logStandard = $logStandard;
-        $this->logError    = $logError;
-        $this->isLogAppend = $isLogAppend;
 
         return $this;
     }
@@ -85,11 +68,45 @@ abstract class AbstractCommand implements CommandInterface
      * @param  Argument[] $arguments
      * @return $this
      */
-    public function setArguments(array $arguments)
+    public function setArguments(array $arguments): CommandInterface
     {
         $this->arguments = [];
 
         return $this->addArguments($arguments);
+    }
+
+    /**
+     * @param bool $withArguments
+     * @param bool $withType
+     * @return string
+     */
+    public function getPattern(bool $withArguments = true, bool $withType = false): string
+    {
+        static $replaces = array(
+            '-'  => '[-]',
+            '\'' => '',
+        );
+
+        $pattern = $this->name . ' ' . $this->buildArguments();
+
+        return (string) str_replace(array_keys($replaces), array_values($replaces), $pattern);
+    }
+
+    /**
+     * Set output log for the command
+     *
+     * @param  string $logStandard
+     * @param  string $logError
+     * @param  bool $isLogAppend
+     * @return $this
+     */
+    public function setLog(string $logStandard, string $logError = null, bool $isLogAppend = false): CommandInterface
+    {
+        $this->logStandard = $logStandard;
+        $this->logError    = $logError;
+        $this->isLogAppend = $isLogAppend;
+
+        return $this;
     }
 
     /**
@@ -99,7 +116,7 @@ abstract class AbstractCommand implements CommandInterface
      * @param  bool $useSystem
      * @return array|int Command output result.
      */
-    public function exec($isAsync = false, $useSystem = false)
+    public function exec(bool $isAsync = false, bool $useSystem = false): array
     {
         $command = $this->build($isAsync);
 
@@ -119,7 +136,7 @@ abstract class AbstractCommand implements CommandInterface
      *
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -130,7 +147,7 @@ abstract class AbstractCommand implements CommandInterface
      * @param  bool $isAsync
      * @return string
      */
-    protected function build($isAsync)
+    protected function build(bool $isAsync): string
     {
         $command = '';
 
@@ -156,7 +173,7 @@ abstract class AbstractCommand implements CommandInterface
      *
      * @return string
      */
-    protected function buildArguments()
+    protected function buildArguments(): string
     {
         $arguments = [];
 
@@ -172,9 +189,9 @@ abstract class AbstractCommand implements CommandInterface
      *
      * @return string
      */
-    protected function buildOutput()
+    protected function buildOutput(): string
     {
-        $output     = ' ';
+        $output     = '';
         $outputSign = ($this->isLogAppend ? '>>' : '>');
 
         //~ Case no log
@@ -184,15 +201,12 @@ abstract class AbstractCommand implements CommandInterface
 
         //~ Case one log defined.
         if ($this->logStandard !== null && $this->logError === null) {
-            $output .= ' ' . $outputSign . ' ' . escapeshellarg($this->logStandard);
-
-            return $output;
+            return ' ' . $outputSign . ' ' . escapeshellarg($this->logStandard);
         }
 
         //~ Redirect
-        $output .= ($this->logStandard === null ? ' 1' . $outputSign . ' ' . escapeshellarg($this->logStandard) : '');
-        $output .= ($this->logError === null ? ' 2' . $outputSign . ' ' . escapeshellarg($this->logError) : '');
+        $output = ($this->logStandard === null ? ' 1' . $outputSign . ' ' . escapeshellarg($this->logStandard) : '');
 
-        return $output;
+        return $output . ($this->logError === null ? ' 2' . $outputSign . ' ' . escapeshellarg($this->logError) : '');
     }
 }
