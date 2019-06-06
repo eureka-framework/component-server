@@ -106,10 +106,10 @@ class PoolConfig
     /**
      * Set the pool "index" (value or name)
      *
-     * @param  string $index
+     * @param  string|null $index
      * @return $this
      */
-    private function setIndex(string $index): self
+    private function setIndex(?string $index): self
     {
         $this->index = $index;
 

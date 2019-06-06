@@ -52,6 +52,11 @@ final class CommandFactory
     {
         $data = explode(' ', $commandString);
 
+        //~ Remove php prefix if exists
+        if ($data[0] === 'php') {
+            array_shift($data);
+        }
+
         $name      = array_shift($data);
         $arguments = $this->parseStringArguments($data);
 
@@ -92,6 +97,8 @@ final class CommandFactory
                 //~ Case "value" (without name)
                 $arguments['__default__'] = $current;
             }
+
+            next($commandArguments);
         }
 
         return $arguments;

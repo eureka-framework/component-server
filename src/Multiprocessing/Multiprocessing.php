@@ -183,8 +183,10 @@ final class Multiprocessing
                 $arguments = array_shift($list);
 
                 //~ If worker is idle, reset it & add new arguments
-                $command = $worker->reset();
-                $command->addArguments($arguments);
+                $worker
+                    ->reset()
+                    ->addArguments($arguments)
+                ;
 
                 //~ If worker is already running,
                 try {
