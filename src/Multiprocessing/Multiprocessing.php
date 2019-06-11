@@ -10,6 +10,9 @@
 namespace Eureka\Component\Server\Multiprocessing;
 
 use Eureka\Component\Server\Command;
+use Eureka\Eurekon\IO\Out;
+use Eureka\Eurekon\Style\Color;
+use Eureka\Eurekon\Style\Style;
 use Psr\Log\LoggerAwareTrait;
 
 /**
@@ -146,6 +149,7 @@ final class Multiprocessing
 
             //~ Detect path changes to stop main loop (useful when production code - based on symlink - is updated)
             if ($this->detectPathChanges && $this->hasPathChanged()) {
+                Out::std((new Style('Path source code has be changed, daemon is ending now!'))->colorForeground(Color::RED));
                 break;
             }
 
