@@ -30,11 +30,32 @@ final class Multiprocessing
     /** @var Retry $retry Retry class instance. */
     protected $retry = null;
 
+    /** @var string Original path (when */
+    protected $originalPath;
+
+    /** @var string */
+    protected $realOriginalPath;
+
     /**
      * @var bool $safeMultiprocessing Check if worker not already running before starting it
      * CAUTION: if false parallelism must be correctly handled by the worker!
      */
     protected $safeMultiprocessing = true;
+
+    /** @var bool $detectPathChanges If must detect path changed & stop daemon main loop when change is detected */
+    protected $detectPathChanges = false;
+
+    /**
+     * Multiprocessing constructor.
+     */
+    public function __construct()
+    {
+        $directoryName = rtrim(dirname($_SERVER['argv'][0]));
+
+        //~ If directoryName is relative, concat to pwd
+        $this->originalPath     = (strpos($directoryName, '/') === 0 ? $directoryName : getenv('PWD') . '/' . $directoryName);
+        $this->realOriginalPath = realpath($this->originalPath);
+    }
 
     /**
      * Set retry instance.
@@ -95,6 +116,17 @@ final class Multiprocessing
     }
 
     /**
+     * @param bool $detectPathChanges
+     * @return $this
+     */
+    public function setDetectPathChanges(bool $detectPathChanges): self
+    {
+        $this->detectPathChanges = $detectPathChanges;
+
+        return $this;
+    }
+
+    /**
      * Run multi workers
      *
      * @param  integer $sleepDelay
@@ -111,6 +143,12 @@ final class Multiprocessing
 
         //~ start main infinite loop
         while (true) {
+
+            //~ Detect path changes to stop main loop (useful when production code - based on symlink - is updated)
+            if ($this->detectPathChanges && $this->hasPathChanged()) {
+                break;
+            }
+
             try {
                 $this->checkPools();
                 sleep($sleepDelay);
@@ -201,5 +239,15 @@ final class Multiprocessing
                 break;
             }
         }
+    }
+
+    /**
+     * @return bool
+     */
+    protected function hasPathChanged(): bool
+    {
+        $realCurrentPath = realpath($this->originalPath);
+
+        return ($realCurrentPath !== $this->realOriginalPath);
     }
 }

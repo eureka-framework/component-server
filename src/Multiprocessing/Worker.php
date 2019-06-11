@@ -54,11 +54,13 @@ class Worker
     /**
      * Check if the process is idle or not.
      *
+     * @param bool $checkArguments
+     * @param bool $withType
      * @return bool
      */
-    public function isIdle()
+    public function isIdle(bool $checkArguments = false, bool $withType = true)
     {
-        $collection = $this->processFinder->find($this->command->getPattern(false, true));
+        $collection = $this->processFinder->find($this->command->getPattern($checkArguments, $withType));
 
         return (count($collection) === 0);
     }
@@ -66,11 +68,13 @@ class Worker
     /**
      * Check if the process is already running or not.
      *
+     * @param bool $checkArguments
+     * @param bool $withType
      * @return bool
      */
-    public function isAlreadyRunning()
+    public function isAlreadyRunning(bool $checkArguments = false, bool $withType = true)
     {
-        $collection = $this->processFinder->find($this->command->getPattern(false, true));
+        $collection = $this->processFinder->find($this->command->getPattern($checkArguments, $withType));
 
         return (count($collection) > 0);
     }
@@ -97,8 +101,11 @@ class Worker
      */
     public function run($isAsync = false, $safeMultiprocessing = true)
     {
+        $checkArguments = $safeMultiprocessing;
+        $withType       = !$safeMultiprocessing;
+
         //~ Check the current command is not already running before execution.
-        if ($safeMultiprocessing && $this->isAlreadyRunning()) {
+        if ($safeMultiprocessing && $this->isAlreadyRunning($checkArguments, $withType)) {
             throw new Exception\WorkerAlreadyRunningException('Process already running with the same arguments!');
         }
 
