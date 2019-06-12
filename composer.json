@@ -13,7 +13,8 @@
 
   "autoload": {
     "psr-4": {
-      "Eureka\\Component\\Server\\": "src/"
+      "Eureka\\Component\\Server\\": "src/",
+      "Eureka\\Component\\Server\\Example\\Script\\": "example/WithEurekon"
     }
   },
   "require": {

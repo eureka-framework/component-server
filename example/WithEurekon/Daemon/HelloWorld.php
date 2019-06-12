@@ -21,9 +21,6 @@ use Eureka\Eurekon;
  */
 class HelloWorld extends Eurekon\AbstractScript
 {
-    /** @var Multiprocessing\Multiprocessing $multiprocessing Multiprocessing instance */
-    protected $multiprocessing = null;
-
     /** @var Command\Argument[] $arguments List of arguments. */
     protected $arguments = [];
 
@@ -54,33 +51,29 @@ class HelloWorld extends Eurekon\AbstractScript
      */
     public function run(): void
     {
-        $this->initMultiprocessing();
+        $nbProcessInParallel = 10;
 
-        $this->multiprocessing->run(5);
-    }
-
-    /**
-     * Initialize multiprocessing.
-     *
-     * @return void
-     */
-    protected function initMultiprocessing(): void
-    {
+        //~ Initialize pools config
         $poolConfigs = [
-            'fast' => new Multiprocessing\PoolConfig(0.6),
-            'slow' => new Multiprocessing\PoolConfig(0.4),
+            'fast' => new Multiprocessing\PoolConfig(0.6), // = 60%
+            'slow' => new Multiprocessing\PoolConfig(0.4), // = 40%
         ];
 
         //~ Prepend worker name argument
         $this->addArgument(new Command\Argument('name', 'Application/Script/Worker/HelloWorld', true));
 
-        $this->multiprocessing = new Multiprocessing\Multiprocessing();
-        $this->multiprocessing->setSafeMultiprocessing(true);
-        $this->multiprocessing->setCallback([$this, 'buildArgumentsForWorker']);
+        //~ Instantiate multiprocessing class
+        $multiprocessing = new Multiprocessing\Multiprocessing();
+        $multiprocessing->setSafeMultiprocessing(true);
+        $multiprocessing->setDetectPathChanges(true);
+        $multiprocessing->setCallback([$this, 'buildArgumentsForWorker']);
 
+        //~ Link create & add pool to multiprocessing instance
         foreach ($poolConfigs as $poolIndex => $poolConfig) {
-            $this->multiprocessing->addPool($this->createPool(10, $poolIndex, $poolConfig));
+            $multiprocessing->addPool($this->createPool($nbProcessInParallel, $poolIndex, $poolConfig));
         }
+
+        $multiprocessing->run(5);
     }
 
     /**
@@ -97,7 +90,6 @@ class HelloWorld extends Eurekon\AbstractScript
         $command = new Command\ConsoleCommand(__DIR__ . '/../../');
         $command->setArguments($this->arguments);
 
-        $command->exec();
         //~ Create pool & set callback context for this pool.
         $pool = new Multiprocessing\Pool($poolIndex, $poolConfig->getRatio(), $poolConfig->isShared());
 
@@ -144,7 +136,7 @@ class HelloWorld extends Eurekon\AbstractScript
      * @param  bool $prepend
      * @return $this
      */
-    protected function addArgument(Command\Argument $argument, $prepend = false)
+    protected function addArgument(Command\Argument $argument, bool $prepend = false): self
     {
         if ($prepend) {
             array_unshift($this->arguments, $argument);
